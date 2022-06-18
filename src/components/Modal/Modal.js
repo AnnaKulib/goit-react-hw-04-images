@@ -1,51 +1,40 @@
-import React, { Component } from 'react';
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import PropTypes from 'prop-types';
 import s from './Modal.module.css';
 
 const modalRoot = document.querySelector('#modal-root');
+function Modal({ onClose, children }) {
+  useEffect(() => {
+    const close = evt => {
+      if (evt.keyCode === 27) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', close);
+    return () => window.removeEventListener('keydown', close);
+  }, [onClose]);
 
-class Modal extends Component {
-  componentDidMount() {
-    // console.log('componentDidMount');
-    window.addEventListener('keydown', this.handleKeyDown);
-  }
-
-  componentWillUnmount() {
-    // console.log('componentWillUnmount');
-    window.removeEventListener('keydown', this.handleKeyDown);
-  }
-
-  handleKeyDown = evt => {
-    // console.log(evt.code);
-    if (evt.code === 'Escape') {
-      // console.log('need close  modal');
-      // console.log('this props:' + this.props);
-      // console.log(this.props);
-      this.props.onClose();
-    }
-  };
-
-  handleBackdropClick = evt => {
-    // console.log('Click to backdrop');
-    // console.log('currentTarget: ', evt.currentTarget);
-    // console.log('target: ', evt.target);
-
+  const handleBackdropClick = evt => {
     if (evt.currentTarget === evt.target) {
-      this.props.onClose();
+      onClose();
     }
   };
 
-  render() {
-    return createPortal(
-      <div className={s.overlay} onClick={this.handleBackdropClick}>
-        <div className={s.modal}>
-          {this.props.children}
-          {/* <img src='' alt=''/> */}
-        </div>
-      </div>,
-      modalRoot
-    );
-  }
+  return createPortal(
+    <div className={s.overlay} onClick={handleBackdropClick}>
+      <div className={s.modal}>
+        {children}
+        {/* <img src='' alt=''/> */}
+      </div>
+    </div>,
+    modalRoot
+  );
 }
+
+Modal.propTypes = {
+  onClose: PropTypes.func.isRequired,
+  children: PropTypes.object.isRequired,
+};
 
 export default Modal;
